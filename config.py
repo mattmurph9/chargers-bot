@@ -20,19 +20,19 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 # News Sources - RSS Feeds focused on Chargers news
 NEWS_SOURCES = [
     {
-        "name": "ESPN - Chargers",
+        "name": "ESPN",
         "url": "https://www.espn.com/espn/rss/nfl/news?team=SD",
-        "keywords": ["chargers", "bolt", "herbert", "staley"]
+        "keywords": ["chargers", "herbert"]
     },
     {
-        "name": "NFL.com - Chargers",
-        "url": "https://www.nfl.com/feeds/rs/articles",
-        "keywords": ["chargers", "los angeles"]
-    },
+        "name": "PFF",
+        "url": "https://www.pff.com/feed/teams/27",
+        "keywords": ["chargers", "herbert"]
+    }, 
     {
-        "name": "The Athletic - Chargers",
-        "url": "https://theathletic.com/rss/teams/chargers/",
-        "keywords": ["chargers"]
+        "name": "LA Daily News",
+        "url": "https://www.dailynews.com/sports/nfl/los-angeles-chargers/feed/",
+        "keywords": ["chargers", "herbert"]
     }
 ]
 
