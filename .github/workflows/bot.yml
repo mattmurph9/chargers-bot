@@ -1,0 +1,52 @@
+name: Chargers News Bot
+
+on:
+  schedule:
+    # Run every 6 hours (at minutes 0 past hours 0, 6, 12, 18)
+    - cron: '0 */6 * * *'
+  workflow_dispatch:  # Allows manual triggering from GitHub Actions tab
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Download previous posted articles
+      uses: actions/download-artifact@v3
+      continue-on-error: true
+      with:
+        name: posted-articles
+        path: .
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        
+    - name: Run bot
+      env:
+        TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+        TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+        TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+        TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+        TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+        CHECK_INTERVAL_HOURS: ${{ secrets.CHECK_INTERVAL_HOURS || '6' }}
+        DEBUG: ${{ secrets.DEBUG || 'False' }}
+      run: |
+        python bot.py
+        
+    - name: Upload posted articles file
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: posted-articles
+        path: posted_articles.txt
+        retention-days: 90
+
