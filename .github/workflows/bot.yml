@@ -1,4 +1,4 @@
-name: Chargers News Bot
+name: Chargers Bot
 
 on:
   schedule:
@@ -12,10 +12,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Download previous posted articles
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       continue-on-error: true
       with:
         name: posted-articles
@@ -43,7 +43,7 @@ jobs:
         python bot.py
         
     - name: Upload posted articles file
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: posted-articles
