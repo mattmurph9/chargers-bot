@@ -66,6 +66,46 @@ To fetch news and post once:
 python bot.py
 ```
 
+### Dry Run (Preview Tweet)
+
+To see what the bot would tweet **without actually posting**:
+
+```bash
+python bot.py --dry-run
+```
+
+Or use the dry run script:
+
+```bash
+python dry_run.py
+```
+
+This will:
+- Find the most recent Chargers article from all sources
+- Draft the tweet and display it
+- Show article details (title, source, link, publish date)
+- Display the full tweet text and character count
+- **Does NOT post to Twitter** - perfect for testing!
+
+### Test Tweet (Actually Posts)
+
+To test the bot by tweeting the most recent Chargers article (regardless of age or if already posted):
+
+```bash
+python bot.py --test
+```
+
+Or use the test script:
+
+```bash
+python test_tweet.py
+```
+
+This will:
+- Find the most recent Chargers article from all sources
+- Tweet it immediately (bypasses age and duplicate checks)
+- **Does NOT** save it to the posted articles list (won't interfere with normal bot operation)
+
 ### Run on Schedule
 
 To run the bot continuously and check for news at regular intervals:
@@ -115,6 +155,9 @@ Edit `.env` to configure:
 chargers-bot/
 ├── bot.py              # Main bot logic
 ├── scheduler.py        # Scheduler for periodic runs
+├── dry_run.py          # Dry run script to draft tweets without posting
+├── test_tweet.py       # Test script to tweet most recent article
+├── test_bot.py         # Test script to preview what would be posted
 ├── config.py           # Configuration settings
 ├── requirements.txt    # Python dependencies
 ├── env.example         # Example environment variables

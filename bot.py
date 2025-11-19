@@ -150,6 +150,103 @@ class ChargersNewsBot:
             logger.error(f"Error posting tweet: {e}")
             return False
     
+    def get_article_publish_time(self, article: Dict) -> datetime:
+        """Get the publish time of an article for sorting."""
+        try:
+            if article.get('published_parsed'):
+                return datetime(*article['published_parsed'][:6])
+            else:
+                # If no date, return a very old date so they sort last
+                return datetime(2000, 1, 1)
+        except:
+            return datetime(2000, 1, 1)
+    
+    def run_dry_run(self):
+        """Dry run mode: Gets the most recent Chargers article and drafts a tweet (does NOT post)."""
+        logger.info("Starting Chargers Bot in DRY RUN MODE...")
+        print("\n" + "=" * 60)
+        print("🔍 DRY RUN MODE - No tweets will be posted")
+        print("=" * 60 + "\n")
+        
+        articles = self.fetch_news()
+        logger.info(f"Found {len(articles)} total Chargers-related articles")
+        
+        if not articles:
+            logger.warning("No Chargers articles found!")
+            print("❌ No Chargers articles found to draft a tweet from.")
+            return False
+        
+        # Sort articles by publish date (most recent first)
+        articles.sort(key=self.get_article_publish_time, reverse=True)
+        
+        # Get the most recent article
+        test_article = articles[0]
+        
+        logger.info(f"DRY RUN: Found most recent article: {test_article['title']}")
+        
+        # Format the tweet
+        try:
+            tweet_text = self.format_tweet(test_article)
+            
+            # Print the draft tweet
+            print("📰 ARTICLE:")
+            print(f"   Title: {test_article['title']}")
+            print(f"   Source: {test_article['source']}")
+            print(f"   Published: {test_article.get('published', 'Unknown date')}")
+            print(f"   Link: {test_article['link']}")
+            print()
+            print("📝 DRAFT TWEET:")
+            print("-" * 60)
+            print(tweet_text)
+            print("-" * 60)
+            print(f"\n📊 Tweet length: {len(tweet_text)} / 280 characters")
+            print(f"\n✅ DRY RUN COMPLETE - Tweet would be posted in live mode")
+            print("=" * 60 + "\n")
+            
+            return True
+        except Exception as e:
+            logger.error(f"❌ DRY RUN FAILED: Error processing article: {e}")
+            print(f"❌ Error: {e}")
+            return False
+    
+    def run_test(self):
+        """Test mode: Gets the most recent Chargers article and tweets it (regardless of age or if already posted)."""
+        logger.info("Starting Chargers Bot in TEST MODE...")
+        
+        articles = self.fetch_news()
+        logger.info(f"Found {len(articles)} total Chargers-related articles")
+        
+        if not articles:
+            logger.warning("No Chargers articles found to test with!")
+            return
+        
+        # Sort articles by publish date (most recent first)
+        articles.sort(key=self.get_article_publish_time, reverse=True)
+        
+        # Get the most recent article
+        test_article = articles[0]
+        
+        logger.info(f"TEST MODE: Found most recent article: {test_article['title']}")
+        logger.info(f"Source: {test_article['source']}")
+        logger.info(f"Link: {test_article['link']}")
+        
+        # Format and post the tweet
+        try:
+            tweet_text = self.format_tweet(test_article)
+            logger.info(f"Tweet text: {tweet_text[:100]}...")
+            
+            if self.post_tweet(tweet_text):
+                logger.info("✅ TEST SUCCESS: Tweet posted successfully!")
+                # Note: In test mode, we DON'T save it to posted_articles
+                # so it won't interfere with normal bot operation
+                return True
+            else:
+                logger.error("❌ TEST FAILED: Could not post tweet")
+                return False
+        except Exception as e:
+            logger.error(f"❌ TEST FAILED: Error processing article: {e}")
+            return False
+    
     def run(self):
         """Main bot execution: fetch news and tweet about new articles."""
         logger.info("Starting Chargers Bot...")
@@ -185,9 +282,24 @@ class ChargersNewsBot:
 
 
 if __name__ == "__main__":
+    import sys
     try:
-        bot = ChargersNewsBot()
-        bot.run()
+        # Check for command line flags
+        if len(sys.argv) > 1:
+            flag = sys.argv[1]
+            bot = ChargersNewsBot()
+            
+            if flag == "--dry-run":
+                bot.run_dry_run()
+            elif flag == "--test":
+                bot.run_test()
+            else:
+                print(f"Unknown flag: {flag}")
+                print("Usage: python bot.py [--dry-run|--test]")
+                sys.exit(1)
+        else:
+            bot = ChargersNewsBot()
+            bot.run()
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
     except Exception as e:
