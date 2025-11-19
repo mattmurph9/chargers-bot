@@ -9,18 +9,13 @@ on:
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to commit and push posted_articles.txt
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Download previous posted articles
-      uses: actions/download-artifact@v4
-      continue-on-error: true
-      with:
-        name: posted-articles
-        path: .
-        
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -42,11 +37,17 @@ jobs:
       run: |
         python bot.py
         
-    - name: Upload posted articles file
-      uses: actions/upload-artifact@v4
+    - name: Commit and push posted_articles.txt if changed
       if: always()
-      with:
-        name: posted-articles
-        path: posted_articles.txt
-        retention-days: 90
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git pull --rebase || true
+        git add posted_articles.txt
+        if ! git diff --staged --quiet; then
+          git commit -m "Update posted_articles.txt [skip ci]"
+          git push
+        else
+          echo "No changes to posted_articles.txt"
+        fi
 
