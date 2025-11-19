@@ -1,5 +1,5 @@
 """
-Los Angeles Chargers News Twitter Bot
+Los Angeles Chargers Bot
 
 This bot fetches news from RSS feeds and tweets about Chargers-related news.
 """
@@ -152,7 +152,7 @@ class ChargersNewsBot:
     
     def run(self):
         """Main bot execution: fetch news and tweet about new articles."""
-        logger.info("Starting Chargers News Bot...")
+        logger.info("Starting Chargers Bot...")
         
         articles = self.fetch_news()
         logger.info(f"Found {len(articles)} total Chargers-related articles")

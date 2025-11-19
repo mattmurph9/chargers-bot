@@ -36,7 +36,7 @@ def format_tweet(title, link):
         title = title[:max_title_length - 3] + "..."
     return f"{title}\n\n{link}"
 
-print("🔍 Testing Chargers News Bot...\n")
+print("🔍 Testing Chargers Bot...\n")
 print("=" * 60)
 
 posted_articles = load_posted_articles()

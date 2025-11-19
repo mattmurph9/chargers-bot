@@ -1,5 +1,5 @@
 """
-Configuration settings for the Chargers News Bot.
+Configuration settings for the Chargers Bot.
 """
 import os
 from dotenv import load_dotenv

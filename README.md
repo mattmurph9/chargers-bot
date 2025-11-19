@@ -1,4 +1,4 @@
-# Los Angeles Chargers News Twitter Bot ⚡
+# Los Angeles Chargers Bot ⚡
 
 A Twitter bot that automatically tweets out Los Angeles Chargers news from various RSS feeds.
 
@@ -112,7 +112,7 @@ Edit `.env` to configure:
 ## File Structure
 
 ```
-chargers-news-bot/
+chargers-bot/
 ├── bot.py              # Main bot logic
 ├── scheduler.py        # Scheduler for periodic runs
 ├── config.py           # Configuration settings
@@ -145,7 +145,7 @@ chargers-news-bot/
 
 ## Deployment
 
-Want to deploy this bot for free? Check out **[DEPLOYMENT.md](DEPLOYMENT.md)** for several free hosting options:
+Want to deploy this bot for free? Check out **GitHub Actions** - it's completely free and perfect for this bot!
 
 - 🎯 **GitHub Actions** (Recommended) - Completely free, runs on schedule
 - 🚂 **Railway** - Free $5/month credit
@@ -156,7 +156,7 @@ The easiest way is **GitHub Actions** - just push to GitHub and add your secrets
 
 ## Next Steps
 
-- Deploy to a free hosting service (see DEPLOYMENT.md)
+- Deploy to GitHub Actions (see GITHUB_ACTIONS_SETUP.md)
 - Add more news sources
 - Implement better article filtering
 - Add retry logic for failed posts
