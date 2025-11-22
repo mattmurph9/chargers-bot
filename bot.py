@@ -235,12 +235,22 @@ class ChargersNewsBot:
         """Generate a tweet thread about a past heartbreaking Chargers loss using AI."""
         if not self.ai_client:
             provider_name = AI_PROVIDER.upper()
+            # Check if the API key is actually set
             if AI_PROVIDER == "groq":
-                raise ValueError(f"{provider_name} API client not initialized. Please set GROQ_API_KEY in your .env file.")
+                if not GROQ_API_KEY:
+                    raise ValueError(f"{provider_name} API client not initialized. Please set GROQ_API_KEY as an environment variable or in your .env file.")
+                else:
+                    raise ValueError(f"{provider_name} API client failed to initialize. Check that GROQ_API_KEY is valid.")
             elif AI_PROVIDER == "gemini":
-                raise ValueError(f"{provider_name} API client not initialized. Please set GEMINI_API_KEY in your .env file.")
+                if not GEMINI_API_KEY:
+                    raise ValueError(f"{provider_name} API client not initialized. Please set GEMINI_API_KEY as an environment variable or in your .env file.")
+                else:
+                    raise ValueError(f"{provider_name} API client failed to initialize. Check that GEMINI_API_KEY is valid.")
             else:
-                raise ValueError(f"{provider_name} API client not initialized. Please set OPENAI_API_KEY in your .env file.")
+                if not OPENAI_API_KEY:
+                    raise ValueError(f"{provider_name} API client not initialized. Please set OPENAI_API_KEY as an environment variable or in your .env file.")
+                else:
+                    raise ValueError(f"{provider_name} API client failed to initialize. Check that OPENAI_API_KEY is valid.")
         
         # Some famous heartbreaking Chargers losses to give context
         prompt = """Generate a Twitter thread (8-12 tweets) about a past heartbreaking Chargers loss.
