@@ -9,12 +9,14 @@ A Twitter bot that automatically tweets out Los Angeles Chargers news from vario
 - 🚫 Prevents duplicate posts by tracking previously posted articles
 - ⏰ Runs on a schedule (configurable interval)
 - 🔍 Filters articles by Chargers-related keywords
+- 🤖 **AI-Powered Threads**: Generates detailed tweet threads about past heartbreaking Chargers losses using AI (Groq, Gemini, or OpenAI)
 
 ## Prerequisites
 
 - Python 3.8 or higher
 - Twitter Developer Account with API access
 - Internet connection
+- AI Provider API Key (for AI-powered threads): Groq (free), Google Gemini (free), or OpenAI (paid)
 
 ## Setup Instructions
 
@@ -49,6 +51,23 @@ pip install -r requirements.txt
    TWITTER_ACCESS_TOKEN_SECRET=your_access_token_secret_here
    TWITTER_BEARER_TOKEN=your_bearer_token_here
    ```
+
+3. (Optional) Add AI Provider credentials for AI-powered threads:
+   ```
+   # For Groq (FREE - Recommended)
+   AI_PROVIDER=groq
+   GROQ_API_KEY=your_groq_api_key_here
+   
+   # OR for Google Gemini (FREE)
+   AI_PROVIDER=gemini
+   GEMINI_API_KEY=your_gemini_api_key_here
+   
+   # OR for OpenAI (Paid)
+   AI_PROVIDER=openai
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+   
+   See [FREE_AI_SETUP.md](FREE_AI_SETUP.md) for detailed setup instructions.
 
 ### 4. Verify Configuration
 
@@ -106,6 +125,35 @@ This will:
 - Tweet it immediately (bypasses age and duplicate checks)
 - **Does NOT** save it to the posted articles list (won't interfere with normal bot operation)
 
+### AI-Powered Heartbreaking Loss Thread
+
+Generate and post a detailed tweet thread about a past heartbreaking Chargers loss using AI:
+
+**Preview (Dry Run):**
+```bash
+python bot.py --heartbreak-dry-run
+```
+
+**Post Live:**
+```bash
+python bot.py --heartbreak
+```
+
+This feature:
+- Uses AI to generate an 8-12 tweet thread telling the complete story of a game
+- Includes context: teams, location, date, and what the game meant
+- Fact-checks using Pro-Football-Reference.com for accuracy
+- Tells the full story with key moments, scores, and turning points
+- Posts as a proper Twitter thread (linked tweets)
+
+**Requirements:**
+- AI provider API key (Groq, Gemini, or OpenAI)
+- See [FREE_AI_SETUP.md](FREE_AI_SETUP.md) for setup instructions
+
+**Schedule with GitHub Actions:**
+- Can be scheduled to run automatically (e.g., weekly)
+- See [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md) for setup
+
 ### Run on Schedule
 
 To run the bot continuously and check for news at regular intervals:
@@ -149,22 +197,40 @@ Edit `.env` to configure:
 - `CHECK_INTERVAL_HOURS`: How often to check for news (default: 6)
 - `DEBUG`: Enable debug logging (default: False)
 
+### AI Provider Settings
+
+Edit `.env` to configure AI provider:
+- `AI_PROVIDER`: Choose `groq` (default, free), `gemini` (free), or `openai` (paid)
+- `GROQ_API_KEY`: Your Groq API key (if using Groq)
+- `GROQ_MODEL`: Model to use (default: `groq/compound`)
+- `GEMINI_API_KEY`: Your Gemini API key (if using Gemini)
+- `GEMINI_MODEL`: Model to use (default: `gemini-pro`)
+- `OPENAI_API_KEY`: Your OpenAI API key (if using OpenAI)
+- `OPENAI_MODEL`: Model to use (default: `gpt-3.5-turbo`)
+
+See [FREE_AI_SETUP.md](FREE_AI_SETUP.md) for detailed AI provider setup.
+
 ## File Structure
 
 ```
 chargers-bot/
-├── bot.py              # Main bot logic
-├── scheduler.py        # Scheduler for periodic runs
-├── dry_run.py          # Dry run script to draft tweets without posting
-├── test_tweet.py       # Test script to tweet most recent article
-├── test_bot.py         # Test script to preview what would be posted
-├── config.py           # Configuration settings
-├── requirements.txt    # Python dependencies
-├── env.example         # Example environment variables
-├── .env                # Your actual credentials (not in git)
-├── .gitignore          # Git ignore rules
-├── posted_articles.txt # Track posted articles (auto-generated)
-└── README.md           # This file
+├── bot.py                    # Main bot logic (includes AI thread generation)
+├── scheduler.py              # Scheduler for periodic runs
+├── dry_run.py                # Dry run script to draft tweets without posting
+├── test_tweet.py             # Test script to tweet most recent article
+├── test_bot.py               # Test script to preview what would be posted
+├── config.py                 # Configuration settings
+├── requirements.txt          # Python dependencies
+├── env.example               # Example environment variables
+├── .env                      # Your actual credentials (not in git)
+├── .gitignore                # Git ignore rules
+├── posted_articles.txt       # Track posted articles (auto-generated)
+├── FREE_AI_SETUP.md          # AI provider setup guide
+├── GITHUB_ACTIONS_SETUP.md   # GitHub Actions deployment guide
+├── .github/
+│   └── workflows/
+│       └── heartbreak-thread.yml  # GitHub Actions workflow for scheduled threads
+└── README.md                 # This file
 ```
 
 ## Troubleshooting
@@ -186,6 +252,14 @@ chargers-bot/
 - The bot tracks posted articles in `posted_articles.txt`
 - If you want to reset, delete this file (but you'll risk reposting old articles)
 
+### AI Provider Issues
+
+- **Model not found**: Check that your API key is valid and you have access to the model
+- **Request too large**: The prompt may be too long. Try a different model or reduce prompt size
+- **Inaccurate facts**: The AI uses web search to fact-check, but may still have errors. Consider reviewing before posting
+- **API errors**: Verify your API key is correct and has sufficient credits/quota
+- See [FREE_AI_SETUP.md](FREE_AI_SETUP.md) for troubleshooting specific providers
+
 ## Deployment
 
 Want to deploy this bot for free? Check out **GitHub Actions** - it's completely free and perfect for this bot!
@@ -199,7 +273,8 @@ The easiest way is **GitHub Actions** - just push to GitHub and add your secrets
 
 ## Next Steps
 
-- Deploy to GitHub Actions (see GITHUB_ACTIONS_SETUP.md)
+- Set up AI provider for heartbreaking loss threads (see [FREE_AI_SETUP.md](FREE_AI_SETUP.md))
+- Deploy to GitHub Actions for scheduled threads (see [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md))
 - Add more news sources
 - Implement better article filtering
 - Add retry logic for failed posts
