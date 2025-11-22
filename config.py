@@ -4,33 +4,25 @@ Configuration settings for the Chargers Bot.
 import os
 from dotenv import load_dotenv
 
-# Load .env file if it exists (for local development)
-# In GitHub Actions, environment variables are set directly, so this won't override them
 load_dotenv()
 
-# Helper function to get env var, treating empty strings as None
-def get_env(key, default=None):
-    """Get environment variable, treating empty strings as None."""
-    value = os.getenv(key, default)
-    return value if value else default
-
 # Twitter API Credentials
-TWITTER_API_KEY = get_env("TWITTER_API_KEY")
-TWITTER_API_SECRET = get_env("TWITTER_API_SECRET")
-TWITTER_ACCESS_TOKEN = get_env("TWITTER_ACCESS_TOKEN")
-TWITTER_ACCESS_TOKEN_SECRET = get_env("TWITTER_ACCESS_TOKEN_SECRET")
-TWITTER_BEARER_TOKEN = get_env("TWITTER_BEARER_TOKEN")
+TWITTER_API_KEY = os.getenv("TWITTER_API_KEY")
+TWITTER_API_SECRET = os.getenv("TWITTER_API_SECRET")
+TWITTER_ACCESS_TOKEN = os.getenv("TWITTER_ACCESS_TOKEN")
+TWITTER_ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
+TWITTER_BEARER_TOKEN = os.getenv("TWITTER_BEARER_TOKEN")
 
 # AI Provider Settings
 # Options: "openai", "groq", "gemini"
-AI_PROVIDER = get_env("AI_PROVIDER", "groq")  # Default to Groq (free tier)
+AI_PROVIDER = os.getenv("AI_PROVIDER", "groq")  # Default to Groq (free tier)
 
 # OpenAI API Credentials
-OPENAI_API_KEY = get_env("OPENAI_API_KEY")
-OPENAI_MODEL = get_env("OPENAI_MODEL", "gpt-3.5-turbo")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
 # Groq API Credentials (FREE TIER - 14,400 requests/day)
-GROQ_API_KEY = get_env("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # Available models: 
 # - groq/compound (supports web search - use for factual accuracy)
 # - groq/compound-mini (faster, single tool call)
@@ -38,11 +30,11 @@ GROQ_API_KEY = get_env("GROQ_API_KEY")
 # - llama-3.1-8b-instant (faster, smaller)
 # - mixtral-8x7b-32768 (alternative)
 # Note: For accurate facts, groq/compound is recommended as it can search the web
-GROQ_MODEL = get_env("GROQ_MODEL", "groq/compound")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "groq/compound")
 
 # Google Gemini API Credentials (FREE TIER - 60 requests/minute)
-GEMINI_API_KEY = get_env("GEMINI_API_KEY")
-GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-pro")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-pro")
 
 # Bot Settings
 CHECK_INTERVAL_HOURS = int(os.getenv("CHECK_INTERVAL_HOURS", "6"))
