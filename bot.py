@@ -234,7 +234,7 @@ class ChargersNewsBot:
     def generate_heartbreaking_loss_thread(self) -> List[str]:
         """Generate a tweet thread about a past heartbreaking Chargers loss using AI."""
         if not self.ai_client:
-            provider_name = AI_PROVIDER.upper()
+            provider_name = AI_PROVIDER.lower()
             # Check if the API key is actually set
             if AI_PROVIDER == "groq":
                 if not GROQ_API_KEY:
