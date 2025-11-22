@@ -35,6 +35,10 @@ jobs:
         TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
       run: |
         echo "AI_PROVIDER: $AI_PROVIDER"
+        echo "GROQ_API_KEY: $GROQ_API_KEY"
+        echo "GEMINI_API_KEY: $GEMINI_API_KEY"
+        echo "OPENAI_API_KEY: $OPENAI_API_KEY"
+        echo "TWITTER_API_KEY: $TWITTER_API_KEY"
         if [ -z "$TWITTER_API_KEY" ]; then
           echo "❌ ERROR: TWITTER_API_KEY secret is not set!"
           exit 1
