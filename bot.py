@@ -43,10 +43,10 @@ class ChargersNewsBot:
     def __init__(self):
         """Initialize the Twitter bot."""
         self.setup_twitter_api()
-        self.setup_openai_client()
+        self.setup_ai_client()
         self.posted_articles = self.load_posted_articles()
     
-    def setup_openai_client(self):
+    def setup_ai_client(self):
         """Set up AI provider client (OpenAI, Groq, or Gemini)."""
         self.ai_client = None
         self.ai_provider = AI_PROVIDER.lower()
@@ -233,6 +233,17 @@ class ChargersNewsBot:
     
     def generate_heartbreaking_loss_thread(self) -> List[str]:
         """Generate a tweet thread about a past heartbreaking Chargers loss using AI."""
+        # Debug: Check environment variables (without exposing full API keys)
+        logger.info(f"AI_PROVIDER: {AI_PROVIDER}")
+        logger.info(f"GROQ_API_KEY set: {bool(GROQ_API_KEY)} (length: {len(GROQ_API_KEY) if GROQ_API_KEY else 0})")
+        logger.info(f"TWITTER_API_KEY set: {bool(TWITTER_API_KEY)} (length: {len(TWITTER_API_KEY) if TWITTER_API_KEY else 0})")
+        logger.info(f"GEMINI_API_KEY set: {bool(GEMINI_API_KEY)} (length: {len(GEMINI_API_KEY) if GEMINI_API_KEY else 0})")
+        logger.info(f"OPENAI_API_KEY set: {bool(OPENAI_API_KEY)} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
+        
+        # Also check raw environment variables
+        import os
+        logger.info(f"Raw env AI_PROVIDER: {os.getenv('AI_PROVIDER', 'NOT SET')}")
+        logger.info(f"Raw env GROQ_API_KEY: {'SET' if os.getenv('GROQ_API_KEY') else 'NOT SET'}")  
         if not self.ai_client:
             provider_name = AI_PROVIDER.lower()
             # Check if the API key is actually set
