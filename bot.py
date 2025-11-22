@@ -86,6 +86,11 @@ class ChargersNewsBot:
         
     def setup_twitter_api(self):
         """Set up Twitter API v2 client."""
+        logger.info(f"TWITTER_API_KEY set: {bool(TWITTER_API_KEY)} (length: {len(TWITTER_API_KEY) if TWITTER_API_KEY else 0})")
+        logger.info(f"TWITTER_API_SECRET set: {bool(TWITTER_API_SECRET)} (length: {len(TWITTER_API_SECRET) if TWITTER_API_SECRET else 0})")
+        logger.info(f"TWITTER_ACCESS_TOKEN set: {bool(TWITTER_ACCESS_TOKEN)} (length: {len(TWITTER_ACCESS_TOKEN) if TWITTER_ACCESS_TOKEN else 0})")
+        logger.info(f"TWITTER_ACCESS_TOKEN_SECRET set: {bool(TWITTER_ACCESS_TOKEN_SECRET)} (length: {len(TWITTER_ACCESS_TOKEN_SECRET) if TWITTER_ACCESS_TOKEN_SECRET else 0})")
+        logger.info(f"TWITTER_BEARER_TOKEN set: {bool(TWITTER_BEARER_TOKEN)} (length: {len(TWITTER_BEARER_TOKEN) if TWITTER_BEARER_TOKEN else 0})")
         try:
             self.client = tweepy.Client(
                 bearer_token=TWITTER_BEARER_TOKEN,
