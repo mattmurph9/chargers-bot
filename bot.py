@@ -11,12 +11,21 @@ import tweepy
 import logging
 from datetime import datetime
 from typing import List, Dict, Set
+from openai import OpenAI
+import google.generativeai as genai
 from config import (
     TWITTER_API_KEY,
     TWITTER_API_SECRET,
     TWITTER_ACCESS_TOKEN,
     TWITTER_ACCESS_TOKEN_SECRET,
     TWITTER_BEARER_TOKEN,
+    AI_PROVIDER,
+    OPENAI_API_KEY,
+    OPENAI_MODEL,
+    GROQ_API_KEY,
+    GROQ_MODEL,
+    GEMINI_API_KEY,
+    GEMINI_MODEL,
     NEWS_SOURCES,
     POSTED_ARTICLES_FILE,
     DEBUG
@@ -34,7 +43,46 @@ class ChargersNewsBot:
     def __init__(self):
         """Initialize the Twitter bot."""
         self.setup_twitter_api()
+        self.setup_openai_client()
         self.posted_articles = self.load_posted_articles()
+    
+    def setup_openai_client(self):
+        """Set up AI provider client (OpenAI, Groq, or Gemini)."""
+        self.ai_client = None
+        self.ai_provider = AI_PROVIDER.lower()
+        
+        try:
+            if self.ai_provider == "groq":
+                if GROQ_API_KEY:
+                    # Groq uses OpenAI-compatible API
+                    self.ai_client = OpenAI(
+                        api_key=GROQ_API_KEY,
+                        base_url="https://api.groq.com/openai/v1"
+                    )
+                    logger.info(f"Groq API client initialized successfully (model: {GROQ_MODEL})")
+                else:
+                    logger.warning("Groq API key not found - AI features will be unavailable")
+                    
+            elif self.ai_provider == "gemini":
+                if GEMINI_API_KEY:
+                    genai.configure(api_key=GEMINI_API_KEY)
+                    self.ai_client = genai.GenerativeModel(GEMINI_MODEL)
+                    logger.info(f"Google Gemini API client initialized successfully (model: {GEMINI_MODEL})")
+                else:
+                    logger.warning("Gemini API key not found - AI features will be unavailable")
+                    
+            elif self.ai_provider == "openai":
+                if OPENAI_API_KEY:
+                    self.ai_client = OpenAI(api_key=OPENAI_API_KEY)
+                    logger.info(f"OpenAI API client initialized successfully (model: {OPENAI_MODEL})")
+                else:
+                    logger.warning("OpenAI API key not found - AI features will be unavailable")
+            else:
+                logger.error(f"Unknown AI provider: {self.ai_provider}. Use 'groq', 'gemini', or 'openai'")
+                
+        except Exception as e:
+            logger.error(f"Failed to initialize AI provider ({self.ai_provider}): {e}")
+            self.ai_client = None
         
     def setup_twitter_api(self):
         """Set up Twitter API v2 client."""
@@ -148,6 +196,161 @@ class ChargersNewsBot:
             return True
         except tweepy.TweepyException as e:
             logger.error(f"Error posting tweet: {e}")
+            return False
+    
+    def post_tweet_thread(self, tweet_texts: List[str]) -> bool:
+        """Post a thread of tweets to Twitter, linking them together."""
+        if not tweet_texts:
+            logger.error("No tweets to post in thread")
+            return False
+        
+        try:
+            previous_tweet_id = None
+            
+            for i, tweet_text in enumerate(tweet_texts, 1):
+                # If this is not the first tweet, reply to the previous one
+                if previous_tweet_id:
+                    response = self.client.create_tweet(
+                        text=tweet_text,
+                        in_reply_to_tweet_id=previous_tweet_id
+                    )
+                else:
+                    response = self.client.create_tweet(text=tweet_text)
+                
+                tweet_id = response.data['id']
+                logger.info(f"Thread tweet {i}/{len(tweet_texts)} posted: {tweet_id}")
+                previous_tweet_id = tweet_id
+                
+                # Wait a bit between tweets to ensure proper threading
+                if i < len(tweet_texts):
+                    time.sleep(2)
+            
+            logger.info(f"Thread posted successfully with {len(tweet_texts)} tweets")
+            return True
+        except tweepy.TweepyException as e:
+            logger.error(f"Error posting tweet thread: {e}")
+            return False
+    
+    def generate_heartbreaking_loss_thread(self) -> List[str]:
+        """Generate a tweet thread about a past heartbreaking Chargers loss using AI."""
+        if not self.ai_client:
+            provider_name = AI_PROVIDER.upper()
+            if AI_PROVIDER == "groq":
+                raise ValueError(f"{provider_name} API client not initialized. Please set GROQ_API_KEY in your .env file.")
+            elif AI_PROVIDER == "gemini":
+                raise ValueError(f"{provider_name} API client not initialized. Please set GEMINI_API_KEY in your .env file.")
+            else:
+                raise ValueError(f"{provider_name} API client not initialized. Please set OPENAI_API_KEY in your .env file.")
+        
+        # Some famous heartbreaking Chargers losses to give context
+        prompt = """Generate a Twitter thread (8-12 tweets) about a past heartbreaking Chargers loss.
+
+CRITICAL: Search Pro-Football-Reference.com to verify ALL facts. Only include verified information.
+
+Thread structure:
+1. START: Context (who, where, when, what it meant) - verify from Pro-Football-Reference.com
+2. Tell the full game story chronologically with key moments
+3. Include actual scores, players, plays - all verified from Pro-Football-Reference.com
+4. Build tension toward the heartbreaking ending
+
+Requirements:
+- Verify scores, player names, dates, stadium from Pro-Football-Reference.com
+- Each tweet under 280 characters
+- Number tweets (1/8, 2/8, etc.)
+- Conversational fan voice
+- If you can't verify it from Pro-Football-Reference.com, don't include it
+
+Format: One tweet per line, ready to post."""
+
+        try:
+            system_prompt = "You are a passionate Los Angeles Chargers fan who loves to commiserate about heartbreaking losses. You write engaging, emotional Twitter threads that tell the complete story of games. Always start by establishing context: which teams are playing, where the game was played, and what the game meant (playoff implications, rivalry, must-win situation, etc.). Then include all key moments, scores, plays, and turning points. You have an encyclopedic knowledge of Chargers history and can recount games in vivid detail, taking readers through the entire game experience moment by moment."
+            
+            if self.ai_provider == "gemini":
+                logger.info(f"Generating thread using Google Gemini ({GEMINI_MODEL})...")
+                full_prompt = f"{system_prompt}\n\n{prompt}"
+                response = self.ai_client.generate_content(
+                    full_prompt,
+                    generation_config={
+                        "temperature": 0.8,
+                        "max_output_tokens": 2000,
+                    }
+                )
+                thread_text = response.text.strip()
+            else:
+                # OpenAI-compatible API (OpenAI or Groq)
+                model = GROQ_MODEL if self.ai_provider == "groq" else OPENAI_MODEL
+                logger.info(f"Generating thread using {self.ai_provider.upper()} ({model})...")
+                
+                response = self.ai_client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.8,
+                    max_tokens=2000
+                )
+                thread_text = response.choices[0].message.content.strip()
+            
+            # Split into individual tweets (assuming they're separated by newlines)
+            tweets = [tweet.strip() for tweet in thread_text.split('\n') if tweet.strip()]
+            
+            # Clean up any numbering that might be in the format
+            cleaned_tweets = []
+            for tweet in tweets:
+                # Remove any leading numbering like "1/5" or "Tweet 1:" if present
+                tweet = re.sub(r'^\d+/\d+\s*[-:]?\s*', '', tweet)
+                tweet = re.sub(r'^Tweet\s+\d+:\s*', '', tweet, flags=re.IGNORECASE)
+                tweet = tweet.strip()
+                if tweet and len(tweet) <= 280:
+                    cleaned_tweets.append(tweet)
+            
+            if not cleaned_tweets:
+                raise ValueError("No valid tweets generated from ChatGPT response")
+            
+            logger.info(f"Generated thread with {len(cleaned_tweets)} tweets")
+            return cleaned_tweets
+            
+        except Exception as e:
+            logger.error(f"Error generating thread with ChatGPT: {e}")
+            raise
+    
+    def post_heartbreaking_loss_thread(self, dry_run: bool = False) -> bool:
+        """Generate and post a tweet thread about a heartbreaking Chargers loss."""
+        try:
+            logger.info("Generating and posting heartbreaking loss thread...")
+            tweets = self.generate_heartbreaking_loss_thread()
+            
+            print("\n" + "=" * 60)
+            if dry_run:
+                print("💔 HEARTBREAKING LOSS THREAD (DRY RUN - NOT POSTING)")
+            else:
+                print("💔 HEARTBREAKING LOSS THREAD")
+            print("=" * 60 + "\n")
+            print(f"Generated {len(tweets)} tweets:\n")
+            for i, tweet in enumerate(tweets, 1):
+                print(f"Tweet {i}/{len(tweets)} ({len(tweet)} chars):")
+                print("-" * 60)
+                print(tweet)
+                print("-" * 60 + "\n")
+            
+            if dry_run:
+                print("✅ DRY RUN COMPLETE - Thread would be posted in live mode")
+                print("=" * 60 + "\n")
+                return True
+            
+            if self.post_tweet_thread(tweets):
+                logger.info("✅ Heartbreaking loss thread posted successfully!")
+                print("✅ Thread posted successfully!")
+                return True
+            else:
+                logger.error("❌ Failed to post thread")
+                print("❌ Failed to post thread")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error in post_heartbreaking_loss_thread: {e}")
+            print(f"❌ Error: {e}")
             return False
     
     def get_article_publish_time(self, article: Dict) -> datetime:
@@ -293,9 +496,13 @@ if __name__ == "__main__":
                 bot.run_dry_run()
             elif flag == "--test":
                 bot.run_test()
+            elif flag == "--heartbreak" or flag == "--heartbreaking-loss":
+                bot.post_heartbreaking_loss_thread(dry_run=False)
+            elif flag == "--heartbreak-dry-run" or flag == "--heartbreaking-loss-dry-run":
+                bot.post_heartbreaking_loss_thread(dry_run=True)
             else:
                 print(f"Unknown flag: {flag}")
-                print("Usage: python bot.py [--dry-run|--test]")
+                print("Usage: python bot.py [--dry-run|--test|--heartbreak|--heartbreak-dry-run]")
                 sys.exit(1)
         else:
             bot = ChargersNewsBot()
