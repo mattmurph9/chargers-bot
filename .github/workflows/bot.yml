@@ -35,6 +35,9 @@ jobs:
         CHECK_INTERVAL_HOURS: ${{ secrets.CHECK_INTERVAL_HOURS || '6' }}
         DEBUG: ${{ secrets.DEBUG || 'False' }}
       run: |
+        if [ -z "$TWITTER_API_KEY" ]; then
+          echo "❌ ERROR: TWITTER_API_KEY secret is not set!"
+          exit 1
         python bot.py
         
     - name: Commit and push posted_articles.txt if changed
